@@ -1,8 +1,28 @@
 from flask import Flask,jsonify,request
 from flask_restful import Api,Resource
+from pymongo import MongoClient
+
 
 app = Flask(__name__)
 api = Api(app)
+
+
+client = MongoClient("mongodb://db:27017") # create connection
+db = client.aNewDB  # create dp
+UserNum = db['usernum']  #create collection
+
+
+# create documents
+UserNum.insert({
+    "number_of_user" : 0
+    })
+
+class Visitor(Resource):
+    def get(self):
+        prev_num = UserNum.find({})[0]['number_of_user']
+        prev_num += 1
+        UserNum.update({},{"$set":{"number_of_user":prev_num}})
+        return "Hello you are {}   Visitor of this application".format(prev_num)
 
 
 @app.route('/')
@@ -120,6 +140,8 @@ api.add_resource(Add, '/add')
 api.add_resource(Subtract, '/subtract')
 api.add_resource(Multiply, '/multiply')
 api.add_resource(Divide, '/divide')
+api.add_resource(Visitor, '/welcome')
+
 
 
 
